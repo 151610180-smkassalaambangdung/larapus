@@ -53,4 +53,6 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\BorrowLog');
     }
+     protected $casts = ['is_verified'=>'boolean'];
+
 }
