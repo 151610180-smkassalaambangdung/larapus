@@ -7,6 +7,9 @@ use App\User;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support;\Facades\Session;
 
 class RegisterController extends Controller
 {
@@ -38,6 +41,7 @@ class RegisterController extends Controller
     public function __construct()
     {
         $this->middleware('guest');
+        $this->middlawere('user-should-verified');
     }
 
     /**
@@ -51,7 +55,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|confirmed|min6',
             'g-recaptcha-response'=>'required|captcha',
             
         ]);
@@ -75,5 +79,17 @@ class RegisterController extends Controller
         $user->sendVerification();
         return $user;
             }
-             public function verify(Request $request,$token) {}
+             public function verify(Request $request,$token)
+             {
+                $email = $request->get('email');
+                $user = $User::where('verification_token', $token)->where('email',$email)->first();
+                if($user) {
+                    $user->verify();
+                    Session::flash("flash_notification",[
+                        "level"=>"success",
+                        "message"=>"berhasil melakukan verifikasi."]);
+                    AUth::login($user);
+                }
+                return redirect('/');
+             }
 }
